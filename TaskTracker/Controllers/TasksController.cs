@@ -4,9 +4,11 @@ using TaskTracker.Api.Dtos;
 using TaskTracker.Api;
 using TaskTracker.Api.Data;
 using TaskTracker.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaskTracker.Api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController(ITaskService _taskService, ILogger<TasksController> _logger) : ControllerBase
