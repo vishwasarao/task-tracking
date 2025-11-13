@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using TaskTracker.Api.Data;
+using TaskTracker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,7 @@ builder.Services.AddDbContext<TaskDbContext>
       }
     
     );
-
+builder.Services.AddTransient<ITaskService, TaskService>();
 
 var app = builder.Build();
 
