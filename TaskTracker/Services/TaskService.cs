@@ -38,10 +38,11 @@ namespace TaskTracker.Services
             return await _dbc.TaskItems.Where(t => t.Id == id)?.Select(t => new TaskReadDto(t.Id, t.Title, t.Description, t.IsCompleted, t.CreatedDate)).FirstOrDefaultAsync();
         }
 
-        public async Task<TaskReadDto> CreateAsync(int id)
+        public async Task<TaskCreateDto> CreateAsync(TaskCreateDto task)
         {
             _logger.LogInformation("------ Create ----");
-            return await _dbc.TaskItems.Where(t => t.Id == id)?.Select(t => new TaskReadDto(t.Id, t.Title, t.Description, t.IsCompleted, t.CreatedDate)).FirstOrDefaultAsync();
+
+            return await _dbc.TaskItems.Add(new TaskItem { Title = task.Title, Description = task.Description});
         }
 
 
