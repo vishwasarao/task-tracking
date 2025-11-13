@@ -15,6 +15,7 @@ namespace TaskTracker.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            _logger.LogInformation("------ Getting All Tasks -----");
             var tasks = await _taskService.GetAllAsync();
             return Ok(tasks);
         }
@@ -27,17 +28,17 @@ namespace TaskTracker.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTask(int id)
+        public async Task<IActionResult> CreateTask([FromBody] TaskCreateDto taskToCreate)
         {
-            var tasks = await _taskService.CreateAsync(id);
-            return Ok(tasks);
+            var task = await _taskService.CreateAsync(taskToCreate);
+            return Ok(task);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateTask(int id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskUpdateDto updatedTask)
         {
-            var tasks = await _taskService.UpdateAsync(id);
-            return Ok(tasks);
+            var task = await _taskService.UpdateAsync(id, updatedTask);
+            return Ok(task);
         }
 
     }
