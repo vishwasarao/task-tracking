@@ -1,18 +1,36 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TaskTracker.Api.Dtos;
+using Microsoft.Identity.Web.Resource;
 using TaskTracker.Api;
 using TaskTracker.Api.Data;
+using TaskTracker.Api.Dtos;
 using TaskTracker.Services;
-using Microsoft.AspNetCore.Authorization;
 
 namespace TaskTracker.Api.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "Tasks.Read.AppRole")]
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController(ITaskService _taskService, ILogger<TasksController> _logger) : ControllerBase
     {
+
+
+        [AllowAnonymous]
+        [HttpGet("debug/whoami")]
+        public IActionResult WhoAmI()
+        {
+            var claims = User?.Claims.Select(c => new { c.Type, c.Value }).ToList();
+            return Ok(new
+            {
+                IsAuthenticated = User?.Identity?.IsAuthenticated ?? false,
+                AuthenticationType = User?.Identity?.AuthenticationType,
+                Claims = claims
+            });
+        }
+
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
