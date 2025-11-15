@@ -7,6 +7,8 @@
         public string? Description { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public int ProjectId { get; set; }
+        public Project Project { get; set; }
 
     }
 }

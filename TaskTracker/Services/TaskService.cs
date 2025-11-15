@@ -4,7 +4,7 @@
 using Microsoft.EntityFrameworkCore;
 using TaskTracker.Api.Data;
 using TaskTracker.Api.Domain;
-using TaskTracker.Api.Dtos;
+using TaskTracker.Api.TaskDtos;
 
 namespace TaskTracker.Services
 {

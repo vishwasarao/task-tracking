@@ -11,5 +11,6 @@ namespace TaskTracker.Api.Data
             
         }
         public DbSet<TaskItem> TaskItems { get; set; }
+        public DbSet<Project> Projects { get; set; }
     }
 }

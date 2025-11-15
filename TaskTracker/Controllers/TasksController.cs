@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web.Resource;
 using TaskTracker.Api;
 using TaskTracker.Api.Data;
-using TaskTracker.Api.Dtos;
+using TaskTracker.Api.TaskDtos;
 using TaskTracker.Services;
 
 namespace TaskTracker.Api.Controllers
@@ -47,14 +47,14 @@ namespace TaskTracker.Api.Controllers
             return Ok(tasks);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateTask([FromBody] TaskCreateDto taskToCreate)
         {
             var task = await _taskService.CreateAsync(taskToCreate);
             return Ok(task);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("update")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskUpdateDto updatedTask)
         {
             var task = await _taskService.UpdateAsync(id, updatedTask);
