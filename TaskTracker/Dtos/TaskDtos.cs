@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace TaskTracker.Api.TaskDtos
+namespace TaskTracker.Api.Dtos
 {
 
     public record TaskCreateDto(
         string Title,
-        string? Description
+        string? Description,
+        int ProjectId
         );
 
     public record TaskUpdateDto(

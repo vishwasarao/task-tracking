@@ -4,7 +4,7 @@
 using Microsoft.EntityFrameworkCore;
 using TaskTracker.Api.Data;
 using TaskTracker.Api.Domain;
-using TaskTracker.Api.TaskDtos;
+using TaskTracker.Api.Dtos;
 
 namespace TaskTracker.Services
 {
@@ -71,6 +71,7 @@ namespace TaskTracker.Services
                 Title = newTask.Title,
                 Description = newTask.Description,
                 IsCompleted = false,
+                ProjectId = newTask.ProjectId,
                 CreatedDate = DateTime.UtcNow // Set server-side creation timestamp
             };
 
