@@ -1,10 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
 using TaskTracker.Api.Data;
 using TaskTracker.Api.Domain;
 using TaskTracker.Api.Dtos;
+using TaskTracker.Api.Services;
 
 namespace TaskTracker.Services
 {
@@ -17,7 +20,7 @@ namespace TaskTracker.Services
         Task<TaskReadDto> CreateAsync(TaskCreateDto task);
     }
 
-    public class TaskService(TaskDbContext _dbc, ILogger<TaskService> _logger) : ITaskService
+    public class TaskService(TaskDbContext _dbc,IMessageBusService _messageBusService, ILogger<TaskService> _logger) : ITaskService
     {
         public async Task<IEnumerable<TaskReadDto>> GetAllAsync()
         {
@@ -78,6 +81,10 @@ namespace TaskTracker.Services
 
             _dbc.TaskItems.Add(entity);
             await _dbc.SaveChangesAsync();
+
+            ServiceBusMessage message = new ServiceBusMessage(JsonSerializer.Serialize(entity));
+            _messageBusService.PublishAsync(message);
+
             return new TaskReadDto(
                         entity.Id,
                         entity.Title,

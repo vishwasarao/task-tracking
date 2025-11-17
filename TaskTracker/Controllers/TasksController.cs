@@ -5,6 +5,7 @@ using Microsoft.Identity.Web.Resource;
 using TaskTracker.Api;
 using TaskTracker.Api.Data;
 using TaskTracker.Api.Dtos;
+using TaskTracker.Api.Services;
 using TaskTracker.Services;
 
 namespace TaskTracker.Api.Controllers
@@ -28,8 +29,6 @@ namespace TaskTracker.Api.Controllers
                 Claims = claims
             });
         }
-
-
 
 
         [HttpGet]

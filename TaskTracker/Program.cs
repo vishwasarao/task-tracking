@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using TaskTracker.Api.Data;
 using TaskTracker.Api.Services;
@@ -31,8 +33,18 @@ builder.Services.AddDbContext<TaskDbContext>
       }
     
     );
+builder.Services.Configure<ServiceBusSettings>(
+    builder.Configuration.GetSection("ServiceBus")
+);
+
+builder.Services.AddSingleton<ServiceBusClient>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<ServiceBusSettings>>().Value;
+    return new ServiceBusClient(options.ConnectionString);
+});
 builder.Services.AddTransient<ITaskService, TaskService>();
 builder.Services.AddTransient<IProjectService, ProjectService>();
+builder.Services.AddTransient<IMessageBusService, MessageBusService>();
 
 
 
