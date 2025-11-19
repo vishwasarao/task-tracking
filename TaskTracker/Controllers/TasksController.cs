@@ -40,7 +40,7 @@ namespace TaskTracker.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> GetAsync(int id)
         {
             var tasks = await _taskService.GetAsync(id);
             return Ok(tasks);
