@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36511.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.Api", "TaskTracker\TaskTracker.Api.csproj", "{C89EE0BA-D104-4764-8FE4-303954A01854}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.Api", "src\TaskTracker.Api\TaskTracker.Api.csproj", "{C89EE0BA-D104-4764-8FE4-303954A01854}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.Api.Test", "TaskTracker.Api.Test\TaskTracker.Api.Test.csproj", "{44859356-FE66-426A-98A0-9198145B0D87}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.Api.Tests", "tests\TaskTracker.Api.Tests\TaskTracker.Api.Tests.csproj", "{44859356-FE66-426A-98A0-9198145B0D87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

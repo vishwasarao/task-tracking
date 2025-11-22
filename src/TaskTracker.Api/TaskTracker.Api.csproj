@@ -24,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\vrao\source\repos\TaskTracker\TaskTracker\.editorconfig" />
+    <EditorConfigFiles Remove="C:\Users\vrao\source\repos\TaskTracker\TaskTracker.Api\.editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="C:\Users\vrao\source\repos\TaskTracker\TaskTracker\.editorconfig" />
+    <None Include="C:\Users\vrao\source\repos\TaskTracker\TaskTracker.Api\.editorconfig" />
   </ItemGroup>
 
 </Project>

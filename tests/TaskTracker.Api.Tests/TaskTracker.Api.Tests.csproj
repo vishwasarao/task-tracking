@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TaskTracker\TaskTracker.Api.csproj" />
+    <ProjectReference Include="..\TaskTracker.Api\TaskTracker.Api.csproj" />
   </ItemGroup>
 
 </Project>
