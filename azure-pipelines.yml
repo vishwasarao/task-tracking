@@ -23,6 +23,16 @@ stages:
         displayName: Build the project
         inputs:
           command: build
+
+    - job: Test
+      displayName: Test the asp.net project and test project
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+      - task: DotNetCoreCLI@2
+        displayName: Build the project
+        inputs:
+          command: test
           
 
 - stage: Build_Image
