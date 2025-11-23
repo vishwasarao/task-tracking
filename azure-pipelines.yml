@@ -37,6 +37,7 @@ stages:
 
 - stage: Build_Image
   displayName: Build image
+  dependsOn: Build_project
   jobs:
   - job: Build
     displayName: Build
