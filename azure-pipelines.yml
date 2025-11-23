@@ -12,7 +12,20 @@ variables:
   tag: '$(Build.BuildId)'
 
 stages:
-- stage: Build
+- stage: Build_project
+  jobs:
+    - job: Build
+      displayName: Bild the asp.net project and test project
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+      - task: DotNetCoreCLI@2
+        displayName: Build the project
+        inputs:
+          command: build
+          
+
+- stage: Build_Image
   displayName: Build image
   jobs:
   - job: Build
