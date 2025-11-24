@@ -11,7 +11,7 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
   vmImage: 'ubuntu-latest'
-  dotnetSdkVersion: '8.x'
+  dotnetSdkVersion: '9.x'
   solution: '**/*.sln'
   publishOutput: '$(Build.ArtifactStagingDirectory)'
   artifactName: 'drop'
