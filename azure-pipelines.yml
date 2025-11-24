@@ -10,6 +10,16 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  vmImage: 'ubuntu-latest'
+  dotnetSdkVersion: '8.x'
+  solution: '**/*.sln'
+  publishOutput: '$(Build.ArtifactStagingDirectory)'
+  artifactName: 'drop'
+  testResultsDir: '$(Pipeline.Workspace)/test-results'
+  imageRepository: 'myrepo/tasktracker'
+  acrServiceConnection: 
+  pushImage: 'true'
+  dockerFilePath: 'src/TaskTracker.Api/Dockerfile'
 
 stages:
 - stage: Build_project
