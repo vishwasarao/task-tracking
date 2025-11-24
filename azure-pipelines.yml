@@ -17,7 +17,7 @@ variables:
   artifactName: 'drop'
   testResultsDir: '$(Pipeline.Workspace)/test-results'
   imageRepository: 'myrepo/tasktracker'
-  acrServiceConnection: 
+  acrServiceConnection: 'azure-container-registry'
   pushImage: 'true'
   dockerFilePath: 'src/TaskTracker.Api/Dockerfile'
 
