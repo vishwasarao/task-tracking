@@ -29,35 +29,117 @@ stages:
       pool:
         vmImage: ubuntu-latest
       steps:
-      - task: DotNetCoreCLI@2
-        displayName: Build the project
+      - task: UseDotNet@2
         inputs:
-          command: build
+          packageType: 'sdk'
+          version: '8.x'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'restore'
+          projects: '''$(solution)'''
+          feedsToUse: 'select'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: '$(solution)'
+          arguments: '-c Release --no-restore'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'publish'
+          publishWebProjects: true
+          arguments: '-c Release -o $(publishOutput)'
+          zipAfterPublish: false
 
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: '$(artifactName)'
+          publishLocation: 'Container'
+
+- stage: Test
+  dependsOn: Build_project
+  jobs:
     - job: Test
       displayName: Test the asp.net project and test project
       pool:
-        vmImage: ubuntu-latest
+        vmImage: $(vmImage)
       steps:
-      - task: DotNetCoreCLI@2
-        displayName: Build the project
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK $(dotnetSdkVersion)'
         inputs:
-          command: test
+          packageType: 'sdk'
+          version: $(dotnetSdkVersion)
+
+      - task: DownloadPipelineArtifact@2
+        displayName: Download published artifact
+        inputs:
+          artifactName: $(artifactName)
+          path: '$(Pipeline.Workspace)/drop'
+
+      - script: mkdir -p $(testResultsDir)
+        displayName: 'Prepare test results dir'
+
+      - task: DotNetCoreCLI@1
+        inputs:
+          command: 'test'
+          projects: '**/*Tests/*.csproj'
+          arguments: '--no-build --logger "trx;LogFileName=$(testResultsDir)/test-results.trx)"'
           
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'XUnit'
+          testResultsFiles: '**/TEST-*.xml'
+          searchFolder: '$(testResultsDir)'
+          failTaskOnFailedTests: true
 
 - stage: Build_Image
   displayName: Build image
-  dependsOn: Build_project
+  dependsOn: Test
   jobs:
   - job: Build
     displayName: Build
     pool:
-      vmImage: ubuntu-latest
+      vmImage: $(vmImage)
     steps:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download build artifact (drop)'
+      inputs:
+        artifact: $(artifactName)
+        path: '$(Pipeline.Workspace)/drop'
+
+    - script: |
+        echo "Preparing Docker image context..."
+        mkdir -p $(Pipeline.Workspace)/image-context
+        # Copy published output into image-context - adjust if your Dockerfile expects a different layout
+        cp -r $(Pipeline.Workspace)/drop/* $(Pipeline.Workspace)/image-context/
+      displayName: 'Prepare Docker build context'
+
+       # If you want to build only (no push) you can let this step run (condition below allows both).
     - task: Docker@2
-      displayName: Build an image
+      displayName: 'Build Docker image (local)'
+      condition: eq(variables['pushImage'], 'false')
       inputs:
         command: build
-        dockerfile: '$(Build.SourcesDirectory)/src/TaskTracker.Api/Dockerfile'
+        dockerfile: '$(Pipeline.Workspace)/image-context/$(dockerfilePath)'
+        buildContext: '$(Pipeline.Workspace)/image-context'
         tags: |
-          $(tag)
+          $(imageTag)
+
+    # Build and push to ACR when pushImage == 'true'
+    - task: Docker@2
+      displayName: 'Build and push Docker image to ACR'
+      condition: eq(variables['pushImage'], 'true')
+      inputs:
+        command: buildAndPush
+        containerRegistry: $(acrServiceConnection)
+        repository: $(imageRepository)
+        dockerfile: '$(Pipeline.Workspace)/image-context/$(dockerfilePath)'
+        buildContext: '$(Pipeline.Workspace)/image-context'
+        tags: |
+          $(imageTag)
+          latest
+
+    - script: |
+        echo "##vso[task.setvariable variable=fullImageName]$(imageRepository):$(imageTag)"
+      displayName: 'Set fullImageName variable'
+      condition: succeeded()
