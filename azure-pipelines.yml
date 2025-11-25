@@ -100,7 +100,7 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: 'VStest'
-          testResultsFiles: '**/TEST-*.xml'
+          testResultsFiles: 'test-results.trx'
           searchFolder: '$(testResultsDir)'
           mergeTestResults: true
           failTaskOnFailedTests: true
