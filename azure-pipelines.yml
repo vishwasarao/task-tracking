@@ -82,7 +82,7 @@ stages:
       - task: DotNetCoreCLI@1
         inputs:
           command: 'test'
-          projects: '**/*tests/*.csproj'
+          projects: '**/*Tests/**/*.csproj'
           arguments: '--no-build --logger "trx;LogFileName=$(testResultsDir)/test-results.trx)"'
           
       - task: PublishTestResults@2
