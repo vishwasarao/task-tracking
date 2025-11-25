@@ -157,6 +157,6 @@ stages:
           latest
 
     - script: |
-        echo "##vso[task.setvariable variable=fullImageName]$(imageRepository):$(imageTag)"
+        echo "##vso[task.setvariable variable=fullImageName]$(imageRepository):$(Tag)"
       displayName: 'Set fullImageName variable'
       condition: succeeded()
