@@ -16,6 +16,7 @@ variables:
   testResultsDir: '$(Pipeline.Workspace)/test-results'
   imageRepository: 'myrepo/tasktracker'
   acrServiceConnection: 'azure-container-registry'
+  armServiceConnection: 'arm'  
   pushImage: 'true'
   dockerFilePath: '$(Build.SourcesDirectory)/src/TaskTracker.Api/Dockerfile'
 
@@ -118,7 +119,7 @@ stages:
     steps:
     - task: AzureWebAppContainer@1
       inputs:
-        azureSubscription: '$(acrServiceConnection)'
+        azureSubscription: '$(armServiceConnection)'
         appName: 'vish-practice-task-tracker'
         deployToSlotOrASE: true
         resourceGroupName: 'vish-practice-personal'
@@ -127,7 +128,7 @@ stages:
 
     - task: AzureAppServiceManage@0
       inputs:
-        azureSubscription: '$(acrServiceConnection)'
+        azureSubscription: '$(armServiceConnection)'
         WebAppName: 'vish-practice-task-tracker'
         ResourceGroupName: 'vish-practice-personal'
         SourceSlot: staging
