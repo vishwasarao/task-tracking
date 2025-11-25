@@ -109,7 +109,26 @@ stages:
           $(Tag)
           latest
 
-    - script: |
-        echo "##vso[task.setvariable variable=fullImageName]$(imageRepository):$(Tag)"
-      displayName: 'Set fullImageName variable'
-      condition: succeeded()
+- stage: Deploy
+  displayName: Deploying to Web App
+  dependsOn: Build_Image
+  jobs:
+  - job: Deploy
+    displayName: Deploy
+    steps:
+    - task: AzureWebAppContainer@1
+      inputs:
+        azureSubscription: '$(acrServiceConnection)'
+        appName: 'vish-practice-task-tracker'
+        deployToSlotOrASE: true
+        resourceGroupName: 'vish-practice-personal'
+        slotName: 'staging'
+        containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+
+    - task: AzureAppServiceManage@0
+      inputs:
+        azureSubscription: '$(acrServiceConnection)'
+        WebAppName: 'vish-practice-task-tracker'
+        ResourceGroupName: 'vish-practice-personal'
+        SourceSlot: staging
+        SwapWithProduction: true
