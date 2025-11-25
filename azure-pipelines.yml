@@ -17,7 +17,7 @@ variables:
   imageRepository: 'myrepo/tasktracker'
   acrServiceConnection: 'azure-container-registry'
   pushImage: 'true'
-  dockerFilePath: 'src/TaskTracker.Api/Dockerfile'
+  dockerFilePath: '$(Build.SourcesDirectory)/src/TaskTracker.Api/Dockerfile'
 
 stages:
 - stage: Build_project
@@ -103,8 +103,8 @@ stages:
         command: buildAndPush
         containerRegistry: $(acrServiceConnection)
         repository: $(imageRepository)
-        dockerfile: '$(Pipeline.Workspace)/$(dockerfilePath)'
-        buildContext: '$(Pipeline.Workspace)/src/TaskTracker.Api'
+        dockerfile: '$(dockerfilePath)'
+        buildContext: '$(Build.SourcesDirectory)/src/TaskTracker.Api'
         tags: |
           $(Tag)
           latest
