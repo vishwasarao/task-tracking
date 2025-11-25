@@ -50,6 +50,16 @@ stages:
           arguments: '-c Release -o $(publishOutput)'
           zipAfterPublish: false
 
+            # after dotnet publish and BEFORE PublishBuildArtifacts
+      - script: |
+          echo "Copy Dockerfile and image context into artifact staging"
+          mkdir -p $(Build.ArtifactStagingDirectory)/src/TaskTracker.Api
+          cp $(Build.SourcesDirectory)/src/TaskTracker.Api/Dockerfile $(Build.ArtifactStagingDirectory)/src/TaskTracker.Api/Dockerfile
+          # copy any files the Dockerfile's COPY needs (adjust as required)
+          cp -r $(Build.SourcesDirectory)/src/TaskTracker.Api/obj $(Build.ArtifactStagingDirectory)/src/TaskTracker.Api/ || true
+        displayName: 'Copy Dockerfile into artifact staging'
+
+
       - task: PublishBuildArtifacts@1
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -87,9 +97,10 @@ stages:
           
       - task: PublishTestResults@2
         inputs:
-          testResultsFormat: 'XUnit'
+          testResultsFormat: 'VStest'
           testResultsFiles: '**/TEST-*.xml'
           searchFolder: '$(testResultsDir)'
+          mergeTestResults: true
           failTaskOnFailedTests: true
 
 - stage: Build_Image
@@ -110,8 +121,12 @@ stages:
     - script: |
         echo "Preparing Docker image context..."
         mkdir -p $(Pipeline.Workspace)/image-context
-        # Copy published output into image-context - adjust if your Dockerfile expects a different layout
+        # Copy published output and copied repo files into image-context
         cp -r $(Pipeline.Workspace)/drop/* $(Pipeline.Workspace)/image-context/
+        # Ensure Dockerfile is at the root of image-context for a simple path
+        if [ -f "$(Pipeline.Workspace)/image-context/src/TaskTracker.Api/Dockerfile" ]; then
+          cp "$(Pipeline.Workspace)/image-context/src/TaskTracker.Api/Dockerfile" "$(Pipeline.Workspace)/image-context/Dockerfile"
+        fi
       displayName: 'Prepare Docker build context'
 
        # If you want to build only (no push) you can let this step run (condition below allows both).
