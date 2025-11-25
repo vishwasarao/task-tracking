@@ -140,7 +140,7 @@ stages:
         dockerfile: '$(Pipeline.Workspace)/image-context/$(dockerfilePath)'
         buildContext: '$(Pipeline.Workspace)/image-context'
         tags: |
-          $(imageTag)
+          $(Tag)
 
     # Build and push to ACR when pushImage == 'true'
     - task: Docker@2
@@ -153,7 +153,7 @@ stages:
         dockerfile: '$(Pipeline.Workspace)/image-context/$(dockerfilePath)'
         buildContext: '$(Pipeline.Workspace)/image-context'
         tags: |
-          $(imageTag)
+          $(Tag)
           latest
 
     - script: |
