@@ -89,12 +89,14 @@ stages:
       - script: mkdir -p $(testResultsDir)
         displayName: 'Prepare test results dir'
 
-      - task: DotNetCoreCLI@1
+      - task: DotNetCoreCLI@2
+        displayName: "Run Tests"
         inputs:
           command: 'test'
-          projects: '**/*Tests/**/*.csproj'
-          arguments: '--no-build --logger "trx;LogFileName=$(testResultsDir)/test-results.trx)"'
-          
+          projects: '**/*Tests/*.csproj'
+          arguments: '--logger "trx;LogFileName=$(testResultsDir)/test-results.trx"'
+          publishTestResults: false
+
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: 'VStest'
