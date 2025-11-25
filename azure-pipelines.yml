@@ -13,8 +13,6 @@ variables:
   vmImage: 'ubuntu-latest'
   dotnetSdkVersion: '9.x'
   solution: '**/*.sln'
-  publishOutput: '$(Build.ArtifactStagingDirectory)'
-  artifactName: 'drop'
   testResultsDir: '$(Pipeline.Workspace)/test-results'
   imageRepository: 'myrepo/tasktracker'
   acrServiceConnection: 'azure-container-registry'
@@ -43,28 +41,6 @@ stages:
           command: 'build'
           projects: '$(solution)'
           arguments: '-c Release --no-restore'
-      - task: DotNetCoreCLI@2
-        inputs:
-          command: 'publish'
-          publishWebProjects: true
-          arguments: '-c Release -o $(publishOutput)'
-          zipAfterPublish: false
-
-            # after dotnet publish and BEFORE PublishBuildArtifacts
-      - script: |
-          echo "Copy Dockerfile and image context into artifact staging"
-          mkdir -p $(Build.ArtifactStagingDirectory)/src/TaskTracker.Api
-          cp $(Build.SourcesDirectory)/src/TaskTracker.Api/Dockerfile $(Build.ArtifactStagingDirectory)/src/TaskTracker.Api/Dockerfile
-          # copy any files the Dockerfile's COPY needs (adjust as required)
-          cp -r $(Build.SourcesDirectory)/src/TaskTracker.Api/obj $(Build.ArtifactStagingDirectory)/src/TaskTracker.Api/ || true
-        displayName: 'Copy Dockerfile into artifact staging'
-
-
-      - task: PublishBuildArtifacts@1
-        inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-          ArtifactName: '$(artifactName)'
-          publishLocation: 'Container'
 
 - stage: Test
   dependsOn: Build_project
@@ -79,12 +55,6 @@ stages:
         inputs:
           packageType: 'sdk'
           version: $(dotnetSdkVersion)
-
-      - task: DownloadPipelineArtifact@2
-        displayName: Download published artifact
-        inputs:
-          artifactName: $(artifactName)
-          path: '$(Pipeline.Workspace)/drop'
 
       - script: mkdir -p $(testResultsDir)
         displayName: 'Prepare test results dir'
@@ -114,31 +84,14 @@ stages:
     pool:
       vmImage: $(vmImage)
     steps:
-    - task: DownloadPipelineArtifact@2
-      displayName: 'Download build artifact (drop)'
-      inputs:
-        artifact: $(artifactName)
-        path: '$(Pipeline.Workspace)/drop'
-
-    - script: |
-        echo "Preparing Docker image context..."
-        mkdir -p $(Pipeline.Workspace)/image-context
-        # Copy published output and copied repo files into image-context
-        cp -r $(Pipeline.Workspace)/drop/* $(Pipeline.Workspace)/image-context/
-        # Ensure Dockerfile is at the root of image-context for a simple path
-        if [ -f "$(Pipeline.Workspace)/image-context/src/TaskTracker.Api/Dockerfile" ]; then
-          cp "$(Pipeline.Workspace)/image-context/src/TaskTracker.Api/Dockerfile" "$(Pipeline.Workspace)/image-context/Dockerfile"
-        fi
-      displayName: 'Prepare Docker build context'
-
        # If you want to build only (no push) you can let this step run (condition below allows both).
     - task: Docker@2
       displayName: 'Build Docker image (local)'
       condition: eq(variables['pushImage'], 'false')
       inputs:
         command: build
-        dockerfile: '$(Pipeline.Workspace)/image-context/$(dockerfilePath)'
-        buildContext: '$(Pipeline.Workspace)/image-context'
+        dockerfile: '$(Pipeline.Workspace)/$(dockerfilePath)'
+        buildContext: '$(Pipeline.Workspace)/src/TaskTracker.Api'
         tags: |
           $(Tag)
 
@@ -150,8 +103,8 @@ stages:
         command: buildAndPush
         containerRegistry: $(acrServiceConnection)
         repository: $(imageRepository)
-        dockerfile: '$(Pipeline.Workspace)/image-context/$(dockerfilePath)'
-        buildContext: '$(Pipeline.Workspace)/image-context'
+        dockerfile: '$(Pipeline.Workspace)/$(dockerfilePath)'
+        buildContext: '$(Pipeline.Workspace)/src/TaskTracker.Api'
         tags: |
           $(Tag)
           latest
