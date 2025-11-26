@@ -10,20 +10,126 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  vmImage: 'ubuntu-latest'
+  dotnetSdkVersion: '9.x'
+  solution: '**/*.sln'
+  testResultsDir: '$(Pipeline.Workspace)/test-results'
+  imageRepository: 'myrepo/tasktracker'
+  acrServiceConnection: 'azure-container-registry'
+  armServiceConnection: 'arm'  
+  pushImage: 'true'
+  dockerFilePath: '$(Build.SourcesDirectory)/src/TaskTracker.Api/Dockerfile'
 
 stages:
-- stage: Build
+- stage: Build_project
+  jobs:
+    - job: Build
+      displayName: Bild the asp.net project and test project
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+      - task: UseDotNet@2
+        inputs:
+          packageType: 'sdk'
+          version: '$(dotnetSdkVersion)'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'restore'
+          projects: '$(solution)'
+          feedsToUse: 'select'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: '$(solution)'
+          arguments: '-c Release --no-restore'
+
+- stage: Test
+  dependsOn: Build_project
+  jobs:
+    - job: Test
+      displayName: Test the asp.net project and test project
+      pool:
+        vmImage: $(vmImage)
+      steps:
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK $(dotnetSdkVersion)'
+        inputs:
+          packageType: 'sdk'
+          version: $(dotnetSdkVersion)
+
+      - script: mkdir -p $(testResultsDir)
+        displayName: 'Prepare test results dir'
+
+      - task: DotNetCoreCLI@2
+        displayName: "Run Tests"
+        inputs:
+          command: 'test'
+          projects: '**/*Tests/*.csproj'
+          arguments: '--logger "trx;LogFileName=$(testResultsDir)/test-results.trx"'
+          publishTestResults: false
+
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'VStest'
+          testResultsFiles: 'test-results.trx'
+          searchFolder: '$(testResultsDir)'
+          mergeTestResults: true
+          failTaskOnFailedTests: true
+
+- stage: Build_Image
   displayName: Build image
+  dependsOn: Test
   jobs:
   - job: Build
     displayName: Build
     pool:
-      vmImage: windows-latest
+      vmImage: $(vmImage)
     steps:
+       # If you want to build only (no push) you can let this step run (condition below allows both).
     - task: Docker@2
-      displayName: Build an image
+      displayName: 'Build Docker image (local)'
+      condition: eq(variables['pushImage'], 'false')
       inputs:
         command: build
-        dockerfile: '$(Build.SourcesDirectory)/src/TaskTracker.Api/Dockerfile'
+        dockerfile: '$(Pipeline.Workspace)/$(dockerfilePath)'
+        buildContext: '$(Pipeline.Workspace)/src/TaskTracker.Api'
         tags: |
-          $(tag)
+          $(Tag)
+
+    # Build and push to ACR when pushImage == 'true'
+    - task: Docker@2
+      displayName: 'Build and push Docker image to ACR'
+      condition: eq(variables['pushImage'], 'true')
+      inputs:
+        command: buildAndPush
+        containerRegistry: $(acrServiceConnection)
+        repository: $(imageRepository)
+        dockerfile: '$(dockerfilePath)'
+        buildContext: '$(Build.SourcesDirectory)/src/TaskTracker.Api'
+        tags: |
+          $(Tag)
+          latest
+
+- stage: Deploy
+  displayName: Deploying to Web App
+  dependsOn: Build_Image
+  jobs:
+  - job: Deploy
+    displayName: Deploy
+    steps:
+    - task: AzureWebAppContainer@1
+      inputs:
+        azureSubscription: '$(armServiceConnection)'
+        appName: 'vish-practice-task-tracker'
+        deployToSlotOrASE: true
+        resourceGroupName: 'vish-practice-personal'
+        slotName: 'staging'
+        containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+
+    - task: AzureAppServiceManage@0
+      inputs:
+        azureSubscription: '$(armServiceConnection)'
+        WebAppName: 'vish-practice-task-tracker'
+        ResourceGroupName: 'vish-practice-personal'
+        SourceSlot: staging
+        SwapWithProduction: true
