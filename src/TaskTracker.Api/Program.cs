@@ -45,7 +45,8 @@ builder.Services.AddSingleton<ServiceBusClient>(sp =>
 builder.Services.AddTransient<ITaskService, TaskService>();
 builder.Services.AddTransient<IProjectService, ProjectService>();
 builder.Services.AddTransient<IMessageBusService, MessageBusService>();
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 
 var app = builder.Build();
@@ -61,6 +62,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapControllers();
 
