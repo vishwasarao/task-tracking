@@ -120,7 +120,7 @@ stages:
     - task: AzureWebAppContainer@1
       inputs:
         azureSubscription: '$(armServiceConnection)'
-        appName: 'vish-practice-task-tracker'
+        appName: 'task-tracker-vish-webapp'
         deployToSlotOrASE: true
         resourceGroupName: 'vish-practice-personal'
         slotName: 'staging'
