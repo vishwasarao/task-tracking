@@ -123,13 +123,6 @@ stages:
         appName: 'task-tracker-vish-webapp'
         deployToSlotOrASE: true
         resourceGroupName: 'vish-practice-personal'
-        slotName: 'staging'
         containers: '$(containerRegistry)/$(imageRepository):$(tag)'
 
-    - task: AzureAppServiceManage@0
-      inputs:
-        azureSubscription: '$(armServiceConnection)'
-        WebAppName: 'task-tracker-vish-webapp'
-        ResourceGroupName: 'vish-practice-personal'
-        SourceSlot: staging
-        SwapWithProduction: true
+        
