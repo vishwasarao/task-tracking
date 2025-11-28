@@ -129,7 +129,7 @@ stages:
     - task: AzureAppServiceManage@0
       inputs:
         azureSubscription: '$(armServiceConnection)'
-        WebAppName: 'vish-practice-task-tracker'
+        WebAppName: 'task-tracker-vish-webapp'
         ResourceGroupName: 'vish-practice-personal'
         SourceSlot: staging
         SwapWithProduction: true
